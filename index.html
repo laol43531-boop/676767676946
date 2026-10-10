@@ -2,408 +2,369 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>ImageDrop · 图片分享</title>
 <style>
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  :root{
-    --bg:#0b0d13; --card:#161a24; --card2:#1e2331; --line:#2a3143;
-    --txt:#e8ecf5; --dim:#8892a8; --pri:#5b8cff; --pri2:#a855f7;
-    --ok:#34d399; --err:#f87171;
-  }
-  html,body{margin:0;padding:0}
-  body{
-    background:radial-gradient(1200px 600px at 15% -10%,#1b2240 0%,transparent 60%),
-               radial-gradient(900px 500px at 90% 0%,#241a3d 0%,transparent 55%),
-               var(--bg);
-    background-attachment:fixed;
-    color:var(--txt);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
-    min-height:100vh;padding:22px 16px 60px;
-  }
-  .wrap{max-width:820px;margin:0 auto}
-  header{text-align:center;margin-bottom:22px}
-  h1{
-    font-size:26px;margin:0 0 6px;letter-spacing:.5px;
-    background:linear-gradient(90deg,var(--pri),var(--pri2));
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-  }
-  header p{margin:0;color:var(--dim);font-size:13px}
-
-  .drop{
-    border:2px dashed var(--line);border-radius:18px;background:var(--card);
-    padding:34px 18px;text-align:center;cursor:pointer;
-    transition:.2s;position:relative;overflow:hidden;
-  }
-  .drop:hover,.drop.over{border-color:var(--pri);background:var(--card2)}
-  .drop.over{transform:scale(1.01)}
-  .drop .ico{font-size:40px;line-height:1;margin-bottom:10px}
-  .drop b{display:block;font-size:16px;margin-bottom:6px}
-  .drop span{color:var(--dim);font-size:12.5px}
-
-  .bar{display:flex;gap:10px;align-items:center;margin:16px 0 10px;flex-wrap:wrap}
-  select,.btn{
-    background:var(--card2);color:var(--txt);border:1px solid var(--line);
-    border-radius:10px;padding:9px 13px;font-size:13px;font-family:inherit;
-    outline:none;cursor:pointer;transition:.15s;
-  }
-  select:hover,.btn:hover{border-color:var(--pri)}
-  .btn.primary{background:linear-gradient(90deg,var(--pri),var(--pri2));border:none;font-weight:600}
-  .btn:active{transform:scale(.97)}
-  .spacer{flex:1}
-  .hint{color:var(--dim);font-size:12px}
-
-  .list{margin-top:16px;display:flex;flex-direction:column;gap:12px}
-  .item{
-    background:var(--card);border:1px solid var(--line);border-radius:14px;
-    padding:12px;display:flex;gap:12px;align-items:flex-start;
-    animation:in .25s ease;
-  }
-  @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  .thumb{
-    width:76px;height:76px;flex:0 0 76px;border-radius:10px;object-fit:cover;
-    background:var(--card2);border:1px solid var(--line);
-  }
-  .meta{flex:1;min-width:0}
-  .fname{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px}
-  .stat{font-size:12px;color:var(--dim);display:flex;align-items:center;gap:6px;margin-bottom:7px}
-  .dot{width:7px;height:7px;border-radius:50%;background:var(--dim);flex:0 0 auto}
-  .dot.ok{background:var(--ok);box-shadow:0 0 8px var(--ok)}
-  .dot.err{background:var(--err)}
-  .dot.run{background:var(--pri);animation:pulse 1s infinite}
-  @keyframes pulse{50%{opacity:.3}}
-  .link{
-    width:100%;background:#0e1119;border:1px solid var(--line);color:#9db4ff;
-    border-radius:9px;padding:8px 10px;font-size:12px;font-family:ui-monospace,Menlo,monospace;
-    margin-bottom:7px;
-  }
-  .acts{display:flex;gap:7px;flex-wrap:wrap}
-  .acts .btn{padding:6px 11px;font-size:12px}
-  .prog{height:4px;border-radius:3px;background:var(--card2);overflow:hidden;margin-bottom:7px}
-  .prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--pri),var(--pri2));transition:width .15s}
-
-  .toast{
-    position:fixed;left:50%;bottom:32px;transform:translate(-50%,20px);
-    background:#232a3b;border:1px solid var(--line);color:var(--txt);
-    padding:11px 18px;border-radius:12px;font-size:13.5px;opacity:0;
-    transition:.25s;pointer-events:none;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.5);
-  }
-  .toast.show{opacity:1;transform:translate(-50%,0)}
-  #fileInput{display:none}
-  footer{text-align:center;color:var(--dim);font-size:11.5px;margin-top:34px;line-height:1.9}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1320;--card:#181d2e;--card2:#1f2538;--line:#2a3247;
+  --txt:#e8ecf5;--sub:#8b94ad;--acc:#5b8cff;--acc2:#7aa2ff;
+  --ok:#3ddc97;--err:#ff5f6d;
+}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:radial-gradient(1200px 600px at 15% -10%,#1b2240 0%,transparent 60%),
+             radial-gradient(900px 500px at 100% 0%,#231a3a 0%,transparent 55%),
+             var(--bg);
+  background-attachment:fixed;color:var(--txt);min-height:100vh;padding:0 0 60px;
+  -webkit-tap-highlight-color:transparent;
+}
+.wrap{max-width:820px;margin:0 auto;padding:0 16px}
+header{padding:34px 0 22px;text-align:center}
+.logo{display:inline-flex;align-items:center;gap:10px;font-size:26px;font-weight:800;letter-spacing:.5px}
+.logo .dot{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--acc),#9b6bff);
+  display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 8px 22px rgba(91,140,255,.35)}
+.sub{margin-top:10px;color:var(--sub);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.25)}
+#drop{border:2px dashed #38415a;border-radius:16px;padding:40px 20px;text-align:center;cursor:pointer;
+  transition:.2s;background:var(--card2)}
+#drop:hover,#drop.over{border-color:var(--acc);background:#1c2338;transform:translateY(-1px)}
+#drop .ico{font-size:44px;line-height:1;margin-bottom:12px}
+#drop .t1{font-size:16px;font-weight:600;margin-bottom:6px}
+#drop .t2{font-size:13px;color:var(--sub)}
+.hint{font-size:12px;color:var(--sub);text-align:center;margin-top:10px}
+.bar{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+button{font-family:inherit;cursor:pointer;border:none;outline:none;border-radius:12px;padding:12px 18px;
+  font-size:14px;font-weight:600;background:linear-gradient(135deg,var(--acc),#7a6bff);color:#fff;
+  transition:.15s;box-shadow:0 6px 18px rgba(91,140,255,.3)}
+button:active{transform:scale(.97)}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--txt);box-shadow:none}
+button:disabled{opacity:.5;cursor:not-allowed}
+.status{font-size:13px;color:var(--sub);margin-left:auto}
+.list{margin-top:6px}
+.item{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.item .top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.thumb{width:56px;height:56px;border-radius:10px;object-fit:cover;background:#0d1120;border:1px solid var(--line);flex-shrink:0}
+.item .meta{flex:1;min-width:0}
+.item .name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .sz{font-size:12px;color:var(--sub);margin-top:3px}
+.tag{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;flex-shrink:0}
+.tag.up{background:rgba(91,140,255,.15);color:var(--acc2)}
+.tag.ok{background:rgba(61,220,151,.15);color:var(--ok)}
+.tag.err{background:rgba(255,95,109,.15);color:var(--err)}
+.linkbox{display:flex;gap:8px;align-items:center;background:#0d1120;border:1px solid var(--line);
+  border-radius:10px;padding:8px 10px}
+.linkbox input{flex:1;background:transparent;border:none;outline:none;color:var(--acc2);
+  font-size:12px;font-family:ui-monospace,Menlo,Consolas,monospace;min-width:0}
+.copy{background:transparent;border:1px solid var(--line);color:var(--sub);padding:6px 10px;
+  border-radius:8px;font-size:12px;box-shadow:none;font-weight:600}
+.copy:active{background:var(--card2)}
+.copy.done{color:var(--ok);border-color:var(--ok)}
+.preview{margin-top:10px;border-radius:10px;overflow:hidden;border:1px solid var(--line);display:none}
+.preview img{width:100%;display:block}
+footer{text-align:center;color:var(--sub);font-size:12px;padding:20px 0;line-height:1.7}
+.tip{background:rgba(91,140,255,.08);border:1px solid rgba(91,140,255,.3);border-radius:12px;
+  padding:12px 14px;font-size:12px;color:#a9c2ff;line-height:1.7;margin-top:14px}
+.toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+  background:var(--card2);border:1px solid var(--line);color:var(--txt);padding:12px 20px;
+  border-radius:12px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:99;
+  box-shadow:0 12px 30px rgba(0,0,0,.4)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.empty{text-align:center;color:var(--sub);font-size:13px;padding:26px 0}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>ImageDrop</h1>
-    <p>拖进来就能用 · 上传后生成链接 · 任何人都能访问下载</p>
+    <div class="logo"><span class="dot">🖼️</span>ImageDrop</div>
+    <div class="sub">上传图片 · 生成公开直链 · 谁拿到链接都能看和下载</div>
   </header>
 
-  <div class="drop" id="drop">
-    <div class="ico">🖼️</div>
-    <b>点击选择图片 / 拖拽到此处 / 直接 Ctrl+V 粘贴</b>
-    <span>支持批量 · 单张建议不超过 20MB</span>
+  <!-- 首次使用的 Token 设置 -->
+  <div class="card" id="setupCard" style="display:none">
+    <div style="font-size:14px;font-weight:700;margin-bottom:8px">🔑 首次使用：填写一次 GitHub Token</div>
+    <div style="font-size:12px;color:var(--sub);line-height:1.7;margin-bottom:12px">
+      Token 只会保存在<b>这台设备的浏览器</b>里（localStorage），不上传任何服务器、也不写进网页源码。
+      填一次以后就不用了。换设备或清缓存后才需要重填。
+    </div>
+    <div class="linkbox">
+      <input id="tokIn" type="password" placeholder="github_pat_..." style="color:var(--txt)">
+      <button class="copy" id="tokSave" style="color:var(--acc2);border-color:var(--acc)">保存</button>
+    </div>
+    <div class="hint" id="tokMsg" style="text-align:left;margin-top:8px"></div>
   </div>
-  <input type="file" id="fileInput" accept="image/*" multiple>
 
-  <div class="bar">
-    <select id="hostSel">
-      <option value="auto">图床：自动选择（推荐）</option>
-      <option value="catbox">Catbox（永久）</option>
-      <option value="litterbox">Litterbox（临时，72小时）</option>
-      <option value="uguu">Uguu（临时，3小时）</option>
-      <option value="tmpfiles">TmpFiles（临时，1小时）</option>
-    </select>
-    <div class="spacer"></div>
-    <button class="btn" id="copyAll">复制全部链接</button>
-    <button class="btn" id="clearAll">清空</button>
+  <div class="card">
+    <div id="drop">
+      <div class="ico">📤</div>
+      <div class="t1">点击选择图片，或拖拽 / 粘贴到这里</div>
+      <div class="t2">支持 JPG / PNG / GIF / WEBP，可多选</div>
+    </div>
+    <input type="file" id="file" accept="image/*" multiple hidden>
+    <div class="bar">
+      <button id="pick">选择图片</button>
+      <button class="ghost" id="setBtn">⚙️ Token</button>
+      <span class="status" id="status">就绪</span>
+    </div>
+    <div class="hint">图片会存进你的 GitHub 仓库，通过 jsDelivr CDN 分发，永久有效、任何人可访问。</div>
   </div>
-  <div class="hint" id="hint">链接是公开的，谁拿到都能下载。别传隐私照片。</div>
 
-  <div class="list" id="list"></div>
+  <div class="card list" id="listWrap">
+    <div class="empty" id="empty">还没有上传的图片</div>
+  </div>
 
-  <footer>
-    图片托管于第三方图床 · 本页面不保存任何文件<br>
-    短期图床的链接会在数小时~数天后失效，长期保存请用 Catbox
-  </footer>
+  <div class="card">
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px">✅ 为什么这次能用</div>
+    <div style="font-size:12px;color:var(--sub);line-height:1.7">
+      之前用的免费图床（catbox / uguu / tmpfiles…）在国内网络下要么被墙、要么不给跨域头，所以一上传就报“网络错误”。<br>
+      现在改为调用 <b style="color:var(--acc2)">GitHub 官方 API</b> 把图片写进你自己的仓库，再用 <b style="color:var(--acc2)">jsDelivr</b> 分发——这两条通道实测国内直连可用、且都带跨域许可。
+    </div>
+    <div class="tip">
+      🔒 Token 没有写进这个网页里。就算别人打开这个页面，也拿不到你的 Token，只能看你分享出去的图片。<br>
+      💡 图片是公开的：谁拿到链接都能查看/下载。想删图就去仓库的 <b>images/</b> 文件夹删掉对应文件即可。
+    </div>
+  </div>
+
+  <footer>ImageDrop · 单文件图床<br>图片托管于 GitHub · 由 jsDelivr 分发</footer>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-(function () {
-  'use strict';
+var CFG = {
+  owner: 'laol43531-boop',
+  repo:  '676767676946',
+  branch:'main',
+  dir:   'images',
+  maxDim: 1600,
+  quality: 0.86
+};
+var API_REPO = 'https://api.github.com/repos/' + CFG.owner + '/' + CFG.repo + '/contents/';
+var RAW = 'https://cdn.jsdelivr.net/gh/' + CFG.owner + '/' + CFG.repo + '@' + CFG.branch + '/' + CFG.dir + '/';
+var TOK_KEY = 'picdrop_token';
 
-  var HOSTS = {
-    catbox: {
-      label: 'Catbox',
-      url: 'https://catbox.moe/user/api.php',
-      field: 'fileToUpload',
-      extra: { reqtype: 'fileupload' },
-      parse: function (t) { return t.trim(); }
-    },
-    litterbox: {
-      label: 'Litterbox',
-      url: 'https://litterbox.catbox.moe/resources/internals/api.php',
-      field: 'fileToUpload',
-      extra: { reqtype: 'fileupload', time: '72h' },
-      parse: function (t) { return t.trim(); }
-    },
-    uguu: {
-      label: 'Uguu',
-      url: 'https://uguu.se/upload.php',
-      field: 'files[]',
-      parse: function (t) { var j = JSON.parse(t); return j.files[0].url; }
-    },
-    tmpfiles: {
-      label: 'TmpFiles',
-      url: 'https://tmpfiles.org/api/v1/upload',
-      field: 'file',
-      parse: function (t) {
-        var j = JSON.parse(t);
-        return j.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
-      }
-    }
-  };
-  var AUTO_ORDER = ['catbox', 'uguu', 'tmpfiles', 'litterbox'];
+var $ = function(id){ return document.getElementById(id); };
+var dropEl = $('drop'), fileEl = $('file'), listWrap = $('listWrap'), emptyEl = $('empty'), statusEl = $('status');
 
-  var listEl = document.getElementById('list');
-  var dropEl = document.getElementById('drop');
-  var inputEl = document.getElementById('fileInput');
-  var hostSel = document.getElementById('hostSel');
-  var results = [];
+function getToken(){ try { return localStorage.getItem(TOK_KEY) || ''; } catch(e){ return ''; } }
+function setToken(t){ try { localStorage.setItem(TOK_KEY, t); } catch(e){} }
 
-  /* ---------- 工具 ---------- */
-  function toast(msg) {
-    var t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(t._t);
-    t._t = setTimeout(function () { t.classList.remove('show'); }, 1800);
-  }
+function toast(msg){
+  var t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._tm); t._tm = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+function setStatus(s){ statusEl.textContent = s; }
+function fmtSize(n){
+  if(n < 1024) return n + ' B';
+  if(n < 1048576) return (n/1024).toFixed(1) + ' KB';
+  return (n/1048576).toFixed(2) + ' MB';
+}
+function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'"',"'":'&#39;'}[c];}); }
 
-  function humanSize(n) {
-    if (n < 1024) return n + ' B';
-    if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
-    return (n / 1048576).toFixed(2) + ' MB';
-  }
+/* ---------- Token 设置面板 ---------- */
+function showSetup(msg){
+  $('setupCard').style.display = 'block';
+  if(msg) { $('tokMsg').textContent = msg; }
+  var cur = getToken();
+  if(cur) $('tokIn').value = cur;
+}
+function hideSetup(){ $('setupCard').style.display = 'none'; }
+$('setBtn').onclick = function(){
+  var sc = $('setupCard');
+  if(sc.style.display === 'block'){ hideSetup(); } else { showSetup(''); }
+};
+$('tokSave').onclick = function(){
+  var v = $('tokIn').value.trim();
+  if(!v){ $('tokMsg').textContent = '请先粘贴 Token'; return; }
+  setToken(v);
+  $('tokMsg').textContent = '✅ 已保存。现在可以上传图片了。';
+  toast('Token 已保存');
+  setTimeout(hideSetup, 700);
+  setStatus('就绪');
+};
 
-  function copyText(text) {
-    if (navigator.clipboard && window.isSecureContext) {
-      return navigator.clipboard.writeText(text);
-    }
-    return new Promise(function (res, rej) {
-      var ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand('copy'); res(); } catch (e) { rej(e); }
-      document.body.removeChild(ta);
-    });
-  }
-
-  /* ---------- 上传 ---------- */
-  function uploadTo(file, key, onProgress) {
-    var h = HOSTS[key];
-    return new Promise(function (resolve, reject) {
-      var fd = new FormData();
-      if (h.extra) { for (var k in h.extra) { if (h.extra.hasOwnProperty(k)) fd.append(k, h.extra[k]); } }
-      fd.append(h.field, file, file.name || 'image.png');
-
-      var xhr = new XMLHttpRequest();
-      xhr.open('POST', h.url);
-      xhr.timeout = 120000;
-      xhr.upload.onprogress = function (e) {
-        if (e.lengthComputable && onProgress) onProgress(e.loaded / e.total * 100);
-      };
-      xhr.onload = function () {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          var u;
-          try { u = h.parse(xhr.responseText); } catch (e) { return reject(new Error('解析失败')); }
-          if (!u || !/^https?:\/\//i.test(u)) return reject(new Error('返回异常'));
-          resolve({ url: u, host: h.label });
-        } else {
-          reject(new Error('HTTP ' + xhr.status));
-        }
-      };
-      xhr.onerror = function () { reject(new Error('网络错误')); };
-      xhr.ontimeout = function () { reject(new Error('超时')); };
-      xhr.send(fd);
-    });
-  }
-
-  function pickOrder() {
-    var v = hostSel.value;
-    return v === 'auto' ? AUTO_ORDER : [v];
-  }
-
-  function uploadOne(file, onProgress) {
-    var order = pickOrder();
-    var lastErr = null;
-
-    function step(i) {
-      if (i >= order.length) return Promise.reject(lastErr || new Error('全部失败'));
-      return uploadTo(file, order[i], onProgress)
-        .catch(function (e) { lastErr = e; return step(i + 1); });
-    }
-    return step(0);
-  }
-
-  /* ---------- 渲染 ---------- */
-  function addItem(file) {
-    var item = {
-      file: file,
-      name: file.name || 'image.png',
-      size: file.size,
-      thumb: URL.createObjectURL(file),
-      status: 'queued',
-      url: '',
-      host: ''
+/* ---------- 工具 ---------- */
+function readAsDataURL(file){
+  return new Promise(function(res, rej){
+    var r = new FileReader();
+    r.onload = function(){ res(r.result); };
+    r.onerror = function(){ rej(new Error('读取文件失败')); };
+    r.readAsDataURL(file);
+  });
+}
+function compress(dataURL, name){
+  return new Promise(function(res){
+    var img = new Image();
+    img.onload = function(){
+      var w = img.width, h = img.height;
+      var scale = Math.min(1, CFG.maxDim / Math.max(w, h));
+      var nw = Math.max(1, Math.round(w * scale));
+      var nh = Math.max(1, Math.round(h * scale));
+      var c = document.createElement('canvas');
+      c.width = nw; c.height = nh;
+      c.getContext('2d').drawImage(img, 0, 0, nw, nh);
+      var isPng = /\.png$/i.test(name) || /\.gif$/i.test(name);
+      res(c.toDataURL(isPng ? 'image/png' : 'image/jpeg', CFG.quality));
     };
-    results.push(item);
+    img.onerror = function(){ res(dataURL); };
+    img.src = dataURL;
+  });
+}
+function makeName(orig){
+  var ext = (orig.match(/\.[a-z0-9]+$/i) || ['.jpg'])[0].toLowerCase();
+  if(ext === '.jpeg') ext = '.jpg';
+  var d = new Date(), p = function(n){ return (n<10?'0':'') + n; };
+  var stamp = '' + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + '-'
+              + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds());
+  var rnd = Math.random().toString(36).slice(2, 8);
+  return 'img-' + stamp + '-' + rnd + ext;
+}
+function b64Of(dataURL){ return dataURL.split(',')[1]; }
 
-    var el = document.createElement('div');
-    el.className = 'item';
-    el.innerHTML =
-      '<img class="thumb" alt="">' +
-      '<div class="meta">' +
-        '<div class="fname"></div>' +
-        '<div class="stat"><span class="dot"></span><span class="stxt">等待上传…</span></div>' +
-        '<div class="prog" style="display:none"><i></i></div>' +
-        '<input class="link" style="display:none" readonly>' +
-        '<div class="acts" style="display:none">' +
-          '<button class="btn act-copy">复制链接</button>' +
-          '<button class="btn act-open">查看</button>' +
-          '<button class="btn act-dl">下载</button>' +
-        '</div>' +
-      '</div>';
-    el.querySelector('.thumb').src = item.thumb;
-    el.querySelector('.fname').textContent = item.name + ' · ' + humanSize(item.size);
-    listEl.insertBefore(el, listEl.firstChild);
-    item.el = el;
-    return item;
-  }
-
-  function setState(item, state, text) {
-    var dot = item.el.querySelector('.dot');
-    var stxt = item.el.querySelector('.stxt');
-    var prog = item.el.querySelector('.prog');
-    var link = item.el.querySelector('.link');
-    var acts = item.el.querySelector('.acts');
-
-    dot.className = 'dot' + (state === 'done' ? ' ok' : state === 'error' ? ' err' : state === 'run' ? ' run' : '');
-    stxt.textContent = text;
-
-    if (state === 'run') { prog.style.display = 'block'; }
-    else { prog.style.display = 'none'; }
-
-    if (state === 'done') {
-      link.style.display = 'block';
-      link.value = item.url;
-      acts.style.display = 'flex';
-      link.onclick = function () { this.select(); };
-      acts.querySelector('.act-copy').onclick = function () {
-        copyText(item.url).then(function () { toast('链接已复制'); })
-          .catch(function () { toast('复制失败，请手动长按复制'); });
-      };
-      acts.querySelector('.act-open').onclick = function () { window.open(item.url, '_blank'); };
-      acts.querySelector('.act-dl').onclick = function () {
-        fetch(item.url).then(function (r) { return r.blob(); }).then(function (b) {
-          var a = document.createElement('a');
-          a.href = URL.createObjectURL(b);
-          a.download = item.name;
-          document.body.appendChild(a); a.click(); document.body.removeChild(a);
-          setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
-        }).catch(function () { window.open(item.url, '_blank'); });
-      };
-    }
-  }
-
-  function handleFiles(files) {
-    var arr = [];
-    for (var i = 0; i < files.length; i++) {
-      if (/^image\//.test(files[i].type) || /\.(png|jpe?g|gif|webp|bmp|svg|avif)$/i.test(files[i].name)) {
-        arr.push(files[i]);
+function putToGitHub(path, base64, message){
+  var token = getToken();
+  if(!token) return Promise.reject(new Error('还没填 Token（点上面 ⚙️ Token 按钮）'));
+  return fetch(API_REPO + path, {
+    method: 'PUT',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ message: message || ('upload ' + path), content: base64, branch: CFG.branch })
+  }).then(function(r){
+    return r.text().then(function(t){
+      if(!r.ok){
+        var msg = 'HTTP ' + r.status;
+        try { msg += ' · ' + (JSON.parse(t).message || ''); } catch(e){}
+        throw new Error(msg);
       }
-    }
-    if (!arr.length) { toast('没有检测到图片'); return; }
-
-    arr.forEach(function (f) {
-      var item = addItem(f);
-      setState(item, 'run', '上传中…');
-      uploadOne(f, function (p) {
-        item.el.querySelector('.prog i').style.width = p.toFixed(0) + '%';
-        setState(item, 'run', '上传中 ' + p.toFixed(0) + '%');
-      }).then(function (r) {
-        item.url = r.url; item.host = r.host; item.status = 'done';
-        setState(item, 'done', '完成 · 托管于 ' + r.host);
-        toast('上传成功');
-      }).catch(function (e) {
-        item.status = 'error';
-        setState(item, 'error', '失败：' + (e.message || '未知错误'));
-      });
+      return JSON.parse(t);
     });
+  });
+}
+
+/* ---------- 列表渲染 ---------- */
+function addItem(file, sizeStr, thumbURL){
+  emptyEl.style.display = 'none';
+  var box = document.createElement('div');
+  box.className = 'item';
+  box.innerHTML =
+    '<div class="top">' +
+      '<img class="thumb" src="' + thumbURL + '">' +
+      '<div class="meta"><div class="name">' + esc(file) + '</div>' +
+      '<div class="sz">' + sizeStr + '</div></div>' +
+      '<span class="tag up">上传中…</span>' +
+    '</div>' +
+    '<div class="linkbox" style="display:none"><input readonly value="">' +
+      '<button class="copy">复制</button></div>' +
+    '<div class="preview"><img></div>';
+  listWrap.insertBefore(box, emptyEl);
+  return box;
+}
+function setOK(box, url){
+  box.querySelector('.tag').className = 'tag ok';
+  box.querySelector('.tag').textContent = '完成';
+  var lb = box.querySelector('.linkbox');
+  lb.style.display = 'flex';
+  var inp = lb.querySelector('input');
+  inp.value = url;
+  var btn = lb.querySelector('.copy');
+  btn.onclick = function(){
+    inp.select(); inp.setSelectionRange(0, 99999);
+    try { document.execCommand('copy'); } catch(e){}
+    if(navigator.clipboard) navigator.clipboard.writeText(url).catch(function(){});
+    btn.textContent = '已复制'; btn.classList.add('done'); toast('链接已复制');
+    setTimeout(function(){ btn.textContent = '复制'; btn.classList.remove('done'); }, 1800);
+  };
+  var prev = box.querySelector('.preview');
+  prev.style.display = 'block';
+  prev.querySelector('img').src = url;
+}
+function setErr(box, msg){
+  box.querySelector('.tag').className = 'tag err';
+  box.querySelector('.tag').textContent = '失败';
+  var sz = box.querySelector('.sz');
+  sz.textContent = msg; sz.style.color = 'var(--err)';
+}
+
+/* ---------- 上传流程 ---------- */
+function handleOne(file){
+  return readAsDataURL(file).then(function(d){
+    var box = addItem(file.name, fmtSize(file.size), d);
+    return compress(d, file.name).then(function(compressed){
+      var raw = b64Of(compressed);
+      var name = makeName(file.name);
+      var path = CFG.dir + '/' + name;
+      return putToGitHub(path, raw, 'upload ' + name).then(function(){
+        var url = RAW + encodeURIComponent(name);
+        setOK(box, url);
+        try {
+          var hist = JSON.parse(localStorage.getItem('picdrop_hist') || '[]');
+          hist.unshift({ u: url, n: file.name, t: Date.now() });
+          localStorage.setItem('picdrop_hist', JSON.stringify(hist.slice(0, 100)));
+        } catch(e){}
+        return url;
+      }).catch(function(e){ setErr(box, '上传失败：' + e.message); throw e; });
+    });
+  });
+}
+var queue = [], running = false;
+function enqueue(files){
+  if(!getToken()){
+    showSetup('请先粘贴 GitHub Token 再上传。');
+    toast('请先填写 Token');
+    return;
   }
-
-  /* ---------- 事件 ---------- */
-  dropEl.addEventListener('click', function () { inputEl.click(); });
-  inputEl.addEventListener('change', function () {
-    handleFiles(this.files);
-    this.value = '';
-  });
-
-  ['dragenter', 'dragover'].forEach(function (ev) {
-    dropEl.addEventListener(ev, function (e) { e.preventDefault(); dropEl.classList.add('over'); });
-  });
-  ['dragleave', 'drop'].forEach(function (ev) {
-    dropEl.addEventListener(ev, function (e) { e.preventDefault(); dropEl.classList.remove('over'); });
-  });
-  dropEl.addEventListener('drop', function (e) {
-    if (e.dataTransfer && e.dataTransfer.files) handleFiles(e.dataTransfer.files);
-  });
-
-  // 整页拖拽
-  window.addEventListener('dragover', function (e) { e.preventDefault(); });
-  window.addEventListener('drop', function (e) {
-    e.preventDefault();
-    if (e.target !== dropEl && e.dataTransfer && e.dataTransfer.files.length) {
-      handleFiles(e.dataTransfer.files);
+  for(var i = 0; i < files.length; i++){
+    if(/^image\//.test(files[i].type)) queue.push(files[i]);
+  }
+  if(!queue.length){ toast('请选择图片文件'); return; }
+  runQueue();
+}
+function runQueue(){
+  if(running) return;
+  running = true;
+  var total = queue.length, done = 0, fail = 0;
+  (function next(){
+    if(!queue.length){
+      running = false;
+      setStatus(fail ? ('完成 ' + done + ' 张，失败 ' + fail + ' 张') : ('全部完成 · ' + done + ' 张'));
+      return;
     }
-  });
+    var f = queue.shift(); done++;
+    setStatus('上传中 ' + done + ' / ' + total + ' …');
+    handleOne(f).then(function(){ next(); }).catch(function(){ fail++; next(); });
+  })();
+}
 
-  // 粘贴
-  document.addEventListener('paste', function (e) {
-    if (!e.clipboardData) return;
-    var files = [];
-    if (e.clipboardData.files && e.clipboardData.files.length) {
-      for (var i = 0; i < e.clipboardData.files.length; i++) files.push(e.clipboardData.files[i]);
-    } else if (e.clipboardData.items) {
-      for (var j = 0; j < e.clipboardData.items.length; j++) {
-        var it = e.clipboardData.items[j];
-        if (it.kind === 'file') { var f = it.getAsFile(); if (f) files.push(f); }
-      }
+/* ---------- 事件 ---------- */
+$('pick').onclick = function(){ fileEl.click(); };
+dropEl.onclick = function(){ fileEl.click(); };
+fileEl.onchange = function(){ enqueue(fileEl.files); fileEl.value = ''; };
+['dragenter','dragover'].forEach(function(ev){
+  dropEl.addEventListener(ev, function(e){ e.preventDefault(); dropEl.classList.add('over'); });
+});
+['dragleave','drop'].forEach(function(ev){
+  dropEl.addEventListener(ev, function(e){ e.preventDefault(); dropEl.classList.remove('over'); });
+});
+dropEl.addEventListener('drop', function(e){
+  if(e.dataTransfer && e.dataTransfer.files) enqueue(e.dataTransfer.files);
+});
+document.addEventListener('paste', function(e){
+  var items = (e.clipboardData && e.clipboardData.items) || [];
+  var arr = [];
+  for(var i = 0; i < items.length; i++){
+    if(items[i].type && /^image\//.test(items[i].type)){
+      var f = items[i].getAsFile(); if(f) arr.push(f);
     }
-    if (files.length) handleFiles(files);
-  });
+  }
+  if(arr.length) enqueue(arr);
+});
 
-  document.getElementById('copyAll').addEventListener('click', function () {
-    var urls = results.filter(function (r) { return r.status === 'done'; }).map(function (r) { return r.url; });
-    if (!urls.length) { toast('还没有成功的链接'); return; }
-    copyText(urls.join('\n'))
-      .then(function () { toast('已复制 ' + urls.length + ' 条链接'); })
-      .catch(function () { toast('复制失败'); });
-  });
-
-  document.getElementById('clearAll').addEventListener('click', function () {
-    results.forEach(function (r) { try { URL.revokeObjectURL(r.thumb); } catch (e) {} });
-    results = [];
-    listEl.innerHTML = '';
-    toast('已清空');
-  });
-})();
+if(!getToken()){ showSetup(''); setStatus('待配置 Token'); }
+else { setStatus('就绪'); }
 </script>
 </body>
 </html>
