@@ -99,7 +99,7 @@ footer{text-align:center;color:var(--sub);font-size:12px;padding:20px 0;line-hei
     <div id="drop">
       <div class="ico">📤</div>
       <div class="t1">点击选择图片，或拖拽 / 粘贴到这里</div>
-      <div class="t2">支持 JPG / PNG / GIF / WEBP，可多选</div>
+      <div class="t2">支持 JPG / PNG / GIF / WEBP，可多选；GIF、WebP 动图会原样保留动画</div>
     </div>
     <input type="file" id="file" accept="image/*" multiple hidden>
     <div class="bar">
@@ -194,6 +194,8 @@ function readAsDataURL(file){
   });
 }
 function compress(dataURL, name){
+  // 动图（GIF / 动图 WebP）：canvas 只能看到第一帧，会丢掉动画，所以原样返回不压缩
+  if(/\.(gif|webp)$/i.test(name)) return Promise.resolve(dataURL);
   return new Promise(function(res){
     var img = new Image();
     img.onload = function(){
@@ -204,7 +206,7 @@ function compress(dataURL, name){
       var c = document.createElement('canvas');
       c.width = nw; c.height = nh;
       c.getContext('2d').drawImage(img, 0, 0, nw, nh);
-      var isPng = /\.png$/i.test(name) || /\.gif$/i.test(name);
+      var isPng = /\.png$/i.test(name);
       res(c.toDataURL(isPng ? 'image/png' : 'image/jpeg', CFG.quality));
     };
     img.onerror = function(){ res(dataURL); };
