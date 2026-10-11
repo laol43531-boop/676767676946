@@ -41,6 +41,8 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none;border-radius
 button:active{transform:scale(.97)}
 button.ghost{background:transparent;border:1px solid var(--line);color:var(--txt);box-shadow:none}
 button:disabled{opacity:.5;cursor:not-allowed}
+.mode{background:transparent;border:1px solid var(--line);color:var(--sub);box-shadow:none;padding:8px 12px;font-size:13px;border-radius:10px}
+.mode.active{color:#fff;background:linear-gradient(135deg,var(--acc),#7a6bff);border-color:transparent;box-shadow:0 6px 18px rgba(91,140,255,.3)}
 .status{font-size:13px;color:var(--sub);margin-left:auto}
 .list{margin-top:6px}
 .item{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
@@ -83,18 +85,40 @@ footer{text-align:center;color:var(--sub);font-size:12px;padding:20px 0;line-hei
     <div class="sub">上传图片与音频 · 生成公开直链 · 谁拿到链接都能看/听和下载</div>
   </header>
 
-  <!-- 首次使用的 Token 设置 -->
+  <!-- 上传设置：直连 / 中转 -->
   <div class="card" id="setupCard" style="display:none">
-    <div style="font-size:14px;font-weight:700;margin-bottom:8px">🔑 首次使用：填写一次 GitHub Token</div>
-    <div style="font-size:12px;color:var(--sub);line-height:1.7;margin-bottom:12px">
-      Token 只会保存在<b>这台设备的浏览器</b>里（localStorage），不上传任何服务器、也不写进网页源码。
-      填一次以后就不用了。换设备或清缓存后才需要重填。
+    <div style="font-size:14px;font-weight:700;margin-bottom:10px">⚙️ 上传设置</div>
+    <div style="font-size:12px;color:var(--sub);line-height:1.7;margin-bottom:10px">
+      两种方式任选其一：<b>有 GitHub Token</b> 就走「直连」；<b>没有 Token</b> 就走「中转」（由服务端代你上传）。
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="mode" data-mode="auto">自动</button>
+      <button class="mode" data-mode="direct">直连（我的 Token）</button>
+      <button class="mode" data-mode="relay">中转（免 Token）</button>
+    </div>
+
+    <div style="font-size:13px;font-weight:600;margin:0 0 6px">🔑 方式一 · 直连（自带 GitHub Token）</div>
+    <div style="font-size:12px;color:var(--sub);line-height:1.7;margin-bottom:8px">
+      Token 只保存在<b>本机浏览器</b>里，不上传任何服务器。填一次以后就不用再填。
     </div>
     <div class="linkbox">
       <input id="tokIn" type="password" placeholder="github_pat_..." style="color:var(--txt)">
       <button class="copy" id="tokSave" style="color:var(--acc2);border-color:var(--acc)">保存</button>
     </div>
-    <div class="hint" id="tokMsg" style="text-align:left;margin-top:8px"></div>
+
+    <div style="font-size:13px;font-weight:600;margin:16px 0 6px">🛰️ 方式二 · 中转（免 Token，用别人搭好的服务）</div>
+    <div style="font-size:12px;color:var(--sub);line-height:1.7;margin-bottom:8px">
+      填一个中转服务地址（Cloudflare Worker），由它代你把文件写进仓库，你就<b>不需要 Token</b>。
+    </div>
+    <div class="linkbox">
+      <input id="relayIn" placeholder="https://xxx.workers.dev/" style="color:var(--txt)">
+    </div>
+    <div class="linkbox" style="margin-top:8px">
+      <input id="relayPassIn" type="password" placeholder="访问口令（没有可留空）" style="color:var(--txt)">
+      <button class="copy" id="relaySave" style="color:var(--acc2);border-color:var(--acc)">保存</button>
+    </div>
+
+    <div class="hint" id="tokMsg" style="text-align:left;margin-top:10px"></div>
   </div>
 
   <div class="card">
@@ -106,7 +130,7 @@ footer{text-align:center;color:var(--sub);font-size:12px;padding:20px 0;line-hei
     <input type="file" id="file" accept="image/*,audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.opus" multiple hidden>
     <div class="bar">
       <button id="pick">选择文件</button>
-      <button class="ghost" id="setBtn">⚙️ Token</button>
+      <button class="ghost" id="setBtn">⚙️ 设置</button>
       <span class="status" id="status">就绪</span>
     </div>
     <div class="hint">文件会存进你的 GitHub 仓库，通过 jsDelivr CDN 分发，永久有效、任何人可访问。图片会自动压缩；音频原样上传（建议单文件 &lt; 20 MB）。</div>
@@ -125,7 +149,8 @@ footer{text-align:center;color:var(--sub);font-size:12px;padding:20px 0;line-hei
     <div class="tip">
       🔒 Token 没有写进这个网页里。就算别人打开这个页面，也拿不到你的 Token，只能看你分享出去的文件。<br>
       💡 文件是公开的：谁拿到链接都能查看/收听/下载。想删除就去仓库的 <b>images/</b> 文件夹删掉对应文件即可。<br>
-      🎵 音频会原样上传（不压缩、不改格式），可直接在浏览器里播放；建议单个音频 &lt; 20 MB（jsDelivr CDN 的单文件限制）。
+      🎵 音频会原样上传（不压缩、不改格式），可直接在浏览器里播放；建议单个音频 &lt; 20 MB（jsDelivr CDN 的单文件限制）。<br>
+      🛰️ 没有 Token 的人可以用「中转」：在 ⚙️ 设置 里填一个别人搭好的中转地址（Cloudflare Worker），同样能免 Token 上传。
     </div>
   </div>
 
@@ -163,8 +188,24 @@ function kindOf(file){
 var $ = function(id){ return document.getElementById(id); };
 var dropEl = $('drop'), fileEl = $('file'), listWrap = $('listWrap'), emptyEl = $('empty'), statusEl = $('status');
 
+var MODE_KEY = 'picdrop_mode', RELAY_KEY = 'picdrop_relay', RELAYPASS_KEY = 'picdrop_relay_pass';
 function getToken(){ try { return localStorage.getItem(TOK_KEY) || ''; } catch(e){ return ''; } }
 function setToken(t){ try { localStorage.setItem(TOK_KEY, t); } catch(e){} }
+function getMode(){ try { return localStorage.getItem(MODE_KEY) || 'auto'; } catch(e){ return 'auto'; } }
+function setMode(m){ try { localStorage.setItem(MODE_KEY, m); } catch(e){} }
+function getRelay(){ try { return localStorage.getItem(RELAY_KEY) || ''; } catch(e){ return ''; } }
+function setRelay(v){ try { localStorage.setItem(RELAY_KEY, v); } catch(e){} }
+function getRelayPass(){ try { return localStorage.getItem(RELAYPASS_KEY) || ''; } catch(e){ return ''; } }
+function setRelayPass(v){ try { localStorage.setItem(RELAYPASS_KEY, v); } catch(e){} }
+/* 选择上传通道：direct（直连）| relay（中转）| null（未配置） */
+function chooseChannel(){
+  var m = getMode();
+  if(m === 'direct') return getToken() ? 'direct' : null;
+  if(m === 'relay')  return getRelay() ? 'relay' : null;
+  if(getToken()) return 'direct';
+  if(getRelay()) return 'relay';
+  return null;
+}
 
 function toast(msg){
   var t = $('toast'); t.textContent = msg; t.classList.add('show');
@@ -178,26 +219,55 @@ function fmtSize(n){
 }
 function esc(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'"',"'":'&#39;'}[c];}); }
 
-/* ---------- Token 设置面板 ---------- */
+/* ---------- 上传设置面板 ---------- */
+function syncModeUI(){
+  var m = getMode(), btns = document.querySelectorAll('.mode');
+  for(var i = 0; i < btns.length; i++){
+    btns[i].classList.toggle('active', btns[i].getAttribute('data-mode') === m);
+  }
+}
+function updateStatus(){
+  var c = chooseChannel();
+  if(c === 'direct') setStatus('就绪 · 直连');
+  else if(c === 'relay') setStatus('就绪 · 中转');
+  else setStatus('待配置上传方式');
+}
 function showSetup(msg){
   $('setupCard').style.display = 'block';
-  if(msg) { $('tokMsg').textContent = msg; }
-  var cur = getToken();
-  if(cur) $('tokIn').value = cur;
+  if(msg) $('tokMsg').textContent = msg;
+  if(getToken()) $('tokIn').value = getToken();
+  if(getRelay()) $('relayIn').value = getRelay();
+  if(getRelayPass()) $('relayPassIn').value = getRelayPass();
+  syncModeUI();
 }
 function hideSetup(){ $('setupCard').style.display = 'none'; }
 $('setBtn').onclick = function(){
   var sc = $('setupCard');
   if(sc.style.display === 'block'){ hideSetup(); } else { showSetup(''); }
 };
+var _mbtns = document.querySelectorAll('.mode');
+for(var _i = 0; _i < _mbtns.length; _i++){
+  (function(b){
+    b.onclick = function(){
+      setMode(b.getAttribute('data-mode'));
+      syncModeUI(); updateStatus();
+      toast('已切换：' + b.textContent);
+    };
+  })(_mbtns[_i]);
+}
 $('tokSave').onclick = function(){
   var v = $('tokIn').value.trim();
   if(!v){ $('tokMsg').textContent = '请先粘贴 Token'; return; }
-  setToken(v);
-  $('tokMsg').textContent = '✅ 已保存。现在可以上传图片了。';
-  toast('Token 已保存');
-  setTimeout(hideSetup, 700);
-  setStatus('就绪');
+  setToken(v); setMode('direct'); syncModeUI();
+  $('tokMsg').textContent = '✅ 已保存 Token，将走「直连」上传。';
+  toast('Token 已保存'); updateStatus();
+};
+$('relaySave').onclick = function(){
+  var u = $('relayIn').value.trim();
+  if(!/^https?:\/\//.test(u)){ $('tokMsg').textContent = '请填写完整的中转地址（以 http:// 或 https:// 开头）'; return; }
+  setRelay(u); setRelayPass($('relayPassIn').value.trim()); setMode('relay'); syncModeUI();
+  $('tokMsg').textContent = '✅ 已保存中转地址，将走「中转」上传（免 Token）。';
+  toast('中转已保存'); updateStatus();
 };
 
 /* ---------- 工具 ---------- */
@@ -265,6 +335,46 @@ function putToGitHub(path, base64, message){
   });
 }
 
+/* 通过中转服务（Cloudflare Worker）上传，免 Token */
+function putViaRelay(path, base64, name){
+  var url = getRelay();
+  if(!url) return Promise.reject(new Error('没有设置中转地址（点 ⚙️ 设置 填写）'));
+  var body = { name: name || path.split('/').pop(), content: base64 };
+  var pass = getRelayPass();
+  if(pass) body.pass = pass;
+  return fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }).then(function(r){
+    return r.text().then(function(t){
+      if(!r.ok){
+        var msg = 'HTTP ' + r.status;
+        try { var j = JSON.parse(t); msg += ' · ' + (j.error || j.message || ''); } catch(e){}
+        throw new Error(msg);
+      }
+      var j;
+      try { j = JSON.parse(t); } catch(e){ throw new Error('中转返回的不是合法 JSON'); }
+      if(!j.url) throw new Error('中转没有返回文件链接');
+      return j.url;
+    });
+  });
+}
+
+/* 统一上传入口：按当前通道分发，返回最终可访问链接 */
+function uploadOne(path, base64, name){
+  var ch = chooseChannel();
+  if(ch === 'direct'){
+    return putToGitHub(path, base64, 'upload ' + name).then(function(){
+      return RAW + encodeURIComponent(name);
+    });
+  }
+  if(ch === 'relay'){
+    return putViaRelay(path, base64, name);
+  }
+  return Promise.reject(new Error('还没有配置上传方式：请填 Token（直连）或中转地址（中转）'));
+}
+
 /* ---------- 列表渲染 ---------- */
 function addItem(file, sizeStr, thumbURL, kind){
   emptyEl.style.display = 'none';
@@ -326,8 +436,7 @@ function handleOne(file){
       var raw = b64Of(processed);
       var name = makeName(file.name, kind);
       var path = CFG.dir + '/' + name;
-      return putToGitHub(path, raw, 'upload ' + name).then(function(){
-        var url = RAW + encodeURIComponent(name);
+      return uploadOne(path, raw, name).then(function(url){
         setOK(box, url);
         try {
           var hist = JSON.parse(localStorage.getItem('picdrop_hist') || '[]');
@@ -341,9 +450,9 @@ function handleOne(file){
 }
 var queue = [], running = false;
 function enqueue(files){
-  if(!getToken()){
-    showSetup('请先粘贴 GitHub Token 再上传。');
-    toast('请先填写 Token');
+  if(!chooseChannel()){
+    showSetup('请先配置上传方式：填 Token（直连）或中转地址（中转）。');
+    toast('请先配置上传方式');
     return;
   }
   for(var i = 0; i < files.length; i++){
@@ -392,8 +501,8 @@ document.addEventListener('paste', function(e){
   if(arr.length) enqueue(arr);
 });
 
-if(!getToken()){ showSetup(''); setStatus('待配置 Token'); }
-else { setStatus('就绪'); }
+if(!chooseChannel()){ showSetup(''); }
+updateStatus();
 </script>
 </body>
 </html>
