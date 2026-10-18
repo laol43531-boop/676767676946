@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>ImageDrop · 图片与音频分享</title>
+<title>ImageDrop · 图片 / 音频 / HTML 分享</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -66,6 +66,12 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .preview{margin-top:10px;border-radius:10px;overflow:hidden;border:1px solid var(--line);display:none}
 .preview img{width:100%;display:block}
 .preview audio{width:100%;display:block;background:#0d1120}
+.preview iframe{width:100%;height:340px;border:0;display:block;background:#fff}
+.pagebar{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px 12px;
+  background:var(--card2);border-top:1px solid var(--line);font-size:12px;color:var(--sub)}
+.pagebar a{color:var(--acc2);font-weight:600;text-decoration:none}
+.pagebar .big{background:transparent;border:1px solid var(--line);color:var(--txt);padding:6px 10px;
+  border-radius:8px;font-size:12px;font-weight:600;box-shadow:none}
 .thumb.emoji{display:flex;align-items:center;justify-content:center;font-size:26px}
 footer{text-align:center;color:var(--sub);font-size:12px;padding:20px 0;line-height:1.7}
 .tip{background:rgba(91,140,255,.08);border:1px solid rgba(91,140,255,.3);border-radius:12px;
@@ -82,7 +88,7 @@ footer{text-align:center;color:var(--sub);font-size:12px;padding:20px 0;line-hei
 <div class="wrap">
   <header>
     <div class="logo"><span class="dot">🎵</span>ImageDrop</div>
-    <div class="sub">上传图片与音频 · 生成公开直链 · 谁拿到链接都能看/听和下载</div>
+    <div class="sub">上传图片 / 音频 / HTML 网页 · 生成公开直链 · 谁拿到链接都能看/听/打开</div>
   </header>
 
   <!-- 上传设置：直连 / 中转 -->
@@ -124,16 +130,16 @@ footer{text-align:center;color:var(--sub);font-size:12px;padding:20px 0;line-hei
   <div class="card">
     <div id="drop">
       <div class="ico">📤</div>
-      <div class="t1">点击选择图片 / 音频，或拖拽到这里</div>
-      <div class="t2">图片：JPG / PNG / GIF / WEBP；音频：MP3 / WAV / OGG / M4A / FLAC 等，可多选</div>
+      <div class="t1">点击选择图片 / 音频 / HTML，或拖拽到这里</div>
+      <div class="t2">图片：JPG / PNG / GIF / WEBP；音频：MP3 / WAV / OGG / M4A / FLAC 等；网页：HTML / HTM，可多选</div>
     </div>
-    <input type="file" id="file" accept="image/*,audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.opus" multiple hidden>
+    <input type="file" id="file" accept="image/*,audio/*,text/html,.html,.htm,.mp3,.wav,.ogg,.m4a,.aac,.flac,.opus" multiple hidden>
     <div class="bar">
       <button id="pick">选择文件</button>
       <button class="ghost" id="setBtn">⚙️ 设置</button>
       <span class="status" id="status">就绪</span>
     </div>
-    <div class="hint">文件会存进你的 GitHub 仓库，通过 jsDelivr CDN 分发，永久有效、任何人可访问。图片会自动压缩；音频原样上传（建议单文件 &lt; 20 MB）。</div>
+    <div class="hint">文件会存进你的 GitHub 仓库，通过 jsDelivr CDN 分发，永久有效、任何人可访问。图片会自动压缩；音频与 HTML 原样上传（建议单文件 &lt; 20 MB）。HTML 上传后可直接在浏览器里打开成网页。</div>
   </div>
 
   <div class="card list" id="listWrap">
@@ -150,6 +156,7 @@ footer{text-align:center;color:var(--sub);font-size:12px;padding:20px 0;line-hei
       🔒 Token 没有写进这个网页里。就算别人打开这个页面，也拿不到你的 Token，只能看你分享出去的文件。<br>
       💡 文件是公开的：谁拿到链接都能查看/收听/下载。想删除就去仓库的 <b>images/</b> 文件夹删掉对应文件即可。<br>
       🎵 音频会原样上传（不压缩、不改格式），可直接在浏览器里播放；建议单个音频 &lt; 20 MB（jsDelivr CDN 的单文件限制）。<br>
+      🖥️ <b>HTML 网页</b>会原样上传，文件名统一存为 page-时间-随机.html，用浏览器打开链接即可看到网页（jsDelivr 返回 text/html，会直接渲染）。页面里用到的图片/CSS/JS 也请按相对路径放在一起上传，就能正常加载。<br>
       🛰️ 没有 Token 的人可以用「中转」：在 ⚙️ 设置 里填一个别人搭好的中转地址（Cloudflare Worker），同样能免 Token 上传。
     </div>
   </div>
@@ -175,13 +182,16 @@ var TOK_KEY = 'picdrop_token';
 /* ---------- 文件类型识别 ---------- */
 var AUD_EXT = /\.(mp3|wav|ogg|oga|m4a|m4b|aac|flac|opus|weba|amr|wma|aif|aiff)$/i;
 var IMG_EXT = /\.(jpg|jpeg|png|gif|webp|bmp|svg|avif|heic|heif)$/i;
+var HTML_EXT = /\.(html?|xhtml)$/i;
 function kindOf(file){
   var t = (file && file.type) || '';
   if(/^image\//.test(t)) return 'image';
   if(/^audio\//.test(t)) return 'audio';
+  if(/^(text\/html|application\/xhtml\+xml)$/.test(t)) return 'html';
   var n = (file && file.name) || '';
   if(AUD_EXT.test(n)) return 'audio';
   if(IMG_EXT.test(n)) return 'image';
+  if(HTML_EXT.test(n)) return 'html';
   return null;
 }
 
@@ -300,14 +310,15 @@ function compress(dataURL, name){
   });
 }
 function makeName(orig, kind){
-  var def = (kind === 'audio') ? '.mp3' : '.jpg';
+  var def = (kind === 'audio') ? '.mp3' : (kind === 'html' ? '.html' : '.jpg');
   var ext = (orig.match(/\.[a-z0-9]+$/i) || [def])[0].toLowerCase();
   if(ext === '.jpeg') ext = '.jpg';
+  if(ext === '.htm') ext = '.html';
   var d = new Date(), p = function(n){ return (n<10?'0':'') + n; };
   var stamp = '' + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + '-'
               + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds());
   var rnd = Math.random().toString(36).slice(2, 8);
-  var pfx = (kind === 'audio') ? 'aud' : 'img';
+  var pfx = (kind === 'audio') ? 'aud' : (kind === 'html' ? 'page' : 'img');
   return pfx + '-' + stamp + '-' + rnd + ext;
 }
 function b64Of(dataURL){ return dataURL.split(',')[1]; }
@@ -379,15 +390,22 @@ function uploadOne(path, base64, name){
 function addItem(file, sizeStr, thumbURL, kind){
   emptyEl.style.display = 'none';
   var isAud = (kind === 'audio');
+  var isHtml = (kind === 'html');
   var box = document.createElement('div');
   box.className = 'item';
   box._kind = kind || 'image';
   var thumb = isAud
     ? '<div class="thumb emoji">🎵</div>'
-    : '<img class="thumb" src="' + thumbURL + '">';
+    : (isHtml ? '<div class="thumb emoji">🖥️</div>'
+              : '<img class="thumb" src="' + thumbURL + '">');
   var preview = isAud
     ? '<div class="preview"><audio controls preload="none"></audio></div>'
-    : '<div class="preview"><img></div>';
+    : (isHtml
+      ? '<div class="preview"><iframe loading="lazy" referrerpolicy="no-referrer" ' +
+          'sandbox="allow-scripts allow-forms allow-popups allow-modals allow-downloads"></iframe>' +
+          '<div class="pagebar"><span>HTML 网页预览</span>' +
+          '<a class="openlink" target="_blank" rel="noopener">↗ 新标签打开</a></div></div>'
+      : '<div class="preview"><img></div>');
   box.innerHTML =
     '<div class="top">' + thumb +
       '<div class="meta"><div class="name">' + esc(file) + '</div>' +
@@ -417,6 +435,12 @@ function setOK(box, url){
   var prev = box.querySelector('.preview');
   prev.style.display = 'block';
   if(box._kind === 'audio'){ prev.querySelector('audio').src = url; }
+  else if(box._kind === 'html'){
+    var fr = prev.querySelector('iframe');
+    if(fr) fr.src = url;
+    var a = prev.querySelector('.openlink');
+    if(a) a.href = url;
+  }
   else { prev.querySelector('img').src = url; }
 }
 function setErr(box, msg){
@@ -431,7 +455,7 @@ function handleOne(file){
   var kind = kindOf(file) || 'image';
   return readAsDataURL(file).then(function(d){
     var box = addItem(file.name, fmtSize(file.size), d, kind);
-    var proc = (kind === 'audio') ? Promise.resolve(d) : compress(d, file.name);
+    var proc = (kind === 'audio' || kind === 'html') ? Promise.resolve(d) : compress(d, file.name);
     return proc.then(function(processed){
       var raw = b64Of(processed);
       var name = makeName(file.name, kind);
@@ -458,7 +482,7 @@ function enqueue(files){
   for(var i = 0; i < files.length; i++){
     if(kindOf(files[i])) queue.push(files[i]);
   }
-  if(!queue.length){ toast('请选择图片或音频文件'); return; }
+  if(!queue.length){ toast('请选择图片 / 音频 / HTML 文件'); return; }
   runQueue();
 }
 function runQueue(){
